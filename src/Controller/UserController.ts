@@ -1,8 +1,11 @@
+import { Result } from "express-validator";
+import { clearLine } from "readline";
+import { Z_ASCII } from "zlib";
 import Student from "../Models/StudentModel";
 
 export class UserController {
 
-    static async addStudent(req: any, res: any, next: any) {
+    static async enrolledStudent(req: any, res: any, next: any) {
         try {
             console.log("Add", req.body)
             const data = {
@@ -10,7 +13,7 @@ export class UserController {
                 lastName: req.body.lastName,
                 rollNo: req.body.rollNo,
                 age: req.body.age,
-                class:req.body.class,
+                class: req.body.class,
                 section: req.body.section,
                 subjects: req.body.subjects,
                 address: [{
@@ -37,6 +40,7 @@ export class UserController {
     static async getStudents(req: any, res: any, next: any) {
         try {
             const student = await Student.find()
+            // const students = await Student.find().skip(0).select('_id').limit(-0)
             return res.status(200).json({ msg: 'List Of Students', student })
         } catch (error) {
             return res.status(200).json({ msg: 'Something is missing', error })
@@ -44,16 +48,16 @@ export class UserController {
     }
 
 
-     static async updateStudent(req: any, res: any) {
+    static async updateStudent(req: any, res: any) {
         // { body: { firstName: any; _id: any; lastName: any; phoneNumber: any }; }
         // { send: (arg0: any) => void; json: (arg0: { status: boolean; e: any; }) => any; }
         try {
             console.log("update", req.body)
-            const data:any = {
+            const data: any = {
                 // _id: req.body._id,
-                
+
             }
-            if(req.body.firstName){
+            if (req.body.firstName) {
                 data["firstName"] = req.body.firstName
                 data.firstName = req.body.firstName
             }
@@ -62,7 +66,7 @@ export class UserController {
             // phoneNumber: req.body.phoneNumber,
             // updated_at: new Date()
             const students = await Student.findOneAndUpdate({ _id: req.body._id }, data);
-            
+
             res.send(students);
         } catch (e) {
             return res.json({ status: true, e })
@@ -83,20 +87,21 @@ export class UserController {
             return res.json({ msg: "Student Not Deleted" })
         }
     }
-    
-   
+
+
     static async findStudent(req: any, res: any, next: any) {
         try {
             const data = [{
 
-                _id: req.body._id 
-                 
+                _id: req.body._id
+
             }]
             const student = await Student.find({
-                _id: req.body._id ,data });
+                _id: req.body._id, data
+            });
             return res.json({ msg: 'Find Student Successfully', student })
         } catch (error) {
-            
+
         }
     }
 
@@ -105,84 +110,63 @@ export class UserController {
         try {
             const search = req.query.search
             const student = await Student.find({
-                firstName: { $regex: search}
+                firstName: { $regex: search }
             }).sort({ class: 1 })
             return res.json({ msg: "Name Found", student })
         } catch (error) {
-         return res.json({ msg: 'Not Found', error })
+            return res.json({ msg: 'Not Found', error })
         }
     }
 
-//     static async pagination(req: any, res: any, next: any){
-//        try{
-        
-//         const resultsPerPage = 5,
-//         let page = req.params.page,
-//         const search = req.query.search,
-//         page = page - 1,
-
-//        const student = await Student.find({page:req.params.page,page:req.query.page});
-//                     .select("name")
-//                    .sort({ name: "asc" })
-//                    .limit(resultsPerPage)
-//                    .skip(resultsPerPage * page)
-//                    .then((results) => {
-//                   return res.status(200).send(results);
 
 
-//     return res.json({ msg: 'Find Student Successfully', student })
-// } catch (error) {
-    
-// }
-// }
+    static async paginate(req: any, res: any, next: any) {
+        try {
+            const students = await Student.find().skip(0).select('firstName').limit(5).select('lastName')
+            return res.status(200).json({ msg: "Students Lists", students })
+        } catch (error) {
 
-    
+            next(error)
+        }
+    }
+
+    static async filterStudent(req: any, res: any, next: any) {
+        try {
+            const queryString = req.query
+            console.log(queryString.filter)
+            let matchFilter: any = {}
+            if (queryString?.classFilter) {
+                matchFilter = {
+                    'class': queryString?.classFilter
+                }
+            }
+            if (queryString?.rollNoFilter) {
+                matchFilter = {
+                    'rollNo': queryString?.rollNoFilter
+                }
+            }
+            if (queryString?.sectionFilter) {
+                matchFilter = {
+                    "section": queryString?.sectionFilter
+                }
+            }
+            if (queryString?.ageFilter) {
+                matchFilter = {
+                    'age': queryString?.ageFilter
+                }
+            }
+            const student = await Student.aggregate([
+                { '$match': matchFilter },
+
+            ]);
+            return res.status(200).json({ msg: "Data successfully filtered", student })
+        } catch (error) {
+            res.status(500).json({ msg: 'Data Not Found', error })
+            return next(error)
+        }
+    }
 
 
 
 
-    // static async Sort(req: any, res: any, next: any){
-    // const Name = [];
-    
-    // console.log(Name.sort({firstName: -1, lastName:-1 ,createdAt:-1, updatedAt:-1 }));
-
-
-    // static async filterStudent(req: any, res: any, next: any) {
-    //     const data = [
-    //         { name: 'A', age: 12, section:'',rollNumber: '', fatherName: ''  }];
-    //          const student = data.filter({
-    //         _id: req.body._id, data
-    //     });
-    //     return res.json({ msg: 'Find Student Successfully', student })
-    // } catch (error) {
-        
-    // }
-
-//    const prices = [200,233,316,340,390,440];
-//     const result = prices.filter(checkPrices);
-//     function checkPrices(prices) {
-//     return prices < 440;
-//     }
-//     console.log(result);
-
-// static async paginate(req,res){
-//         
-//         let page = req.params.page  ; 
-//         const search = req.query.search;
-    
-//         page = page - 1
-    
-//         usermodels.find({page:req.params.page,page:req.query.page})
-//             .select("name")
-//             .sort({ name: "asc" })
-//             .limit(resultsPerPage)
-//             .skip(resultsPerPage * page)
-//             .then((results) => {
-//                 return res.status(200).send(results);
-//             })
-//             .catch((err) => {
-//                 return res.status(500).send(err);
-//             });
-//     });
-    
-    
+}

@@ -16,12 +16,14 @@ export class UserRoutes{
     
     getRoutes(){
         this.router.get('/getStudents',UserController.getStudents);
+        this.router.get('/paginate',UserController.paginate);
     }
 
     postRoutes(){
-       this.router.post('/addStudent',UserController.addStudent)
+       this.router.post('/enrolledStudent',UserController.enrolledStudent)
        this.router.post('/findStudent',UserController.findStudent)
        this.router.post('/searchSort',UserController.searchSort)
+       this.router.post('/filterStudent',UserController.filterStudent)
       
     }
 
