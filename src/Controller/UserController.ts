@@ -1,6 +1,4 @@
-import { Result } from "express-validator";
-import { clearLine } from "readline";
-import { Z_ASCII } from "zlib";
+import { resourceLimits } from "worker_threads";
 import Student from "../Models/StudentModel";
 
 export class UserController {
@@ -122,7 +120,13 @@ export class UserController {
 
     static async paginate(req: any, res: any, next: any) {
         try {
-            const students = await Student.find().skip(0).select('firstName').limit(5).select('lastName')
+            const page = req.query.page;
+            const perPage = 2;
+            // const pageCount = req.query.pageCount;
+            const students = await Student.find().skip((perPage * page) - perPage).limit(perPage)
+            
+            // if (req.query.limit <= 6) req.query.limit = 10;
+            // next();
             return res.status(200).json({ msg: "Students Lists", students })
         } catch (error) {
 
@@ -133,7 +137,6 @@ export class UserController {
     static async filterStudent(req: any, res: any, next: any) {
         try {
             const queryString = req.query
-            console.log(queryString.filter)
             let matchFilter: any = {}
             if (queryString?.classFilter) {
                 matchFilter = {
