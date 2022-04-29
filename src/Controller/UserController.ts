@@ -127,7 +127,7 @@ export class UserController {
             
             // if (req.query.limit <= 6) req.query.limit = 10;
             // next();
-            return res.status(200).json({ msg: "Students Lists", students })
+            return res.status(200).json({ msg: "Students List", students })
         } catch (error) {
 
             next(error)
