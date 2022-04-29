@@ -59,10 +59,18 @@ export class UserController {
                 data["firstName"] = req.body.firstName
                 data.firstName = req.body.firstName
             }
+            if(req.body.lastName){
+                data["lastName"] = req.body.lastName
+                data.lastName = req.body.lastName
+            }
+            if(req.body.phoneNumber){
+                data["phoneNumber"]=req.body.phoneNumber
+                data.phoneNumber = req.body.phoneNumber
+            }
 
             // lastName:req.body.lastName,
             // phoneNumber: req.body.phoneNumber,
-            // updated_at: new Date()
+             updated_at: new Date()
             const students = await Student.findOneAndUpdate({ _id: req.body._id }, data);
 
             res.send(students);
